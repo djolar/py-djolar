@@ -16,6 +16,8 @@ class Book(models.Model):
     name = models.CharField('name of the book', max_length=100)
     publish_at = models.DateTimeField('publish date')
     author = models.ForeignKey(Author)
+    statu = models.CharField('status of the book', max_length=10)
+    createDate = models.DateTimeField('create at', auto_now=True)
 ```
 
 And we need to implement a search engine in the front-end web app to support `Book` search
@@ -236,8 +238,7 @@ Book.objects.filter(queryQ | Q(pk__gte=1))
 ```
 
 
-Implement with DJANGO & DJANGO RESET FRAMEWORK
-----------------------------------------------
+#### Implement with Django & DJANGO RESET FRAMEWORK
 
 
 ```python
