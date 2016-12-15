@@ -20,8 +20,9 @@ class Book(models.Model):
     createDate = models.DateTimeField('create at', auto_now=True)
 ```
 
-And we need to implement a search engine in the front-end web app to support `Book` search
-Search criteria would be like tis:
+And we need to implement a search engine in the front-end web app to support `Book` search.
+
+Search criteria would be like this:
 
 * search by book name (contains)
 * search by book name (exactly match)
