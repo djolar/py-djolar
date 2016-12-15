@@ -114,6 +114,9 @@ Suppose, the query param from front-end contains the following field names:
 So the parser may look like this:
 
 ```python
+
+from parser import DjangoSearchParser
+
 class BookSearchParser(DjangoSearchParser):
     query_mapping = {
         'name': 'name',
@@ -230,4 +233,52 @@ Book.objects.filter(queryQ)
 Book.objects.filter(queryQ).filter(pk__gte=1)
 
 Book.objects.filter(queryQ | Q(pk__gte=1))
+```
+
+
+Implement with DJANGO & DJANGO RESET FRAMEWORK
+----------------------------------------------
+
+
+```python
+
+class APIBookSearcher(DjangoSearchParser):
+    query_mapping = {
+        'from': 'createDate__gte',
+        'to': 'createDate__lte',
+    }
+
+    force_search = {
+        'status__in': ('published', 'in progress')
+    }
+
+    # Default to filter 7 days sales
+    default_search = {
+        'createDate__range': (timedelta(days=-7) + now(), now())
+    }
+    
+
+class APIBookListView(mixins.ListModelMixin, 
+                      DjangoSearchMixin,
+                      generics.GenericAPIView):
+    '''
+    Book list API
+    '''
+    serializer_class = APIReportXYNumericDataSerializer
+    searcher_class = APIBookSearcher
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        # Get search parameters
+        searcher = self.get_searcher()
+        queryQ = searcher.get_query_fields(self.request.GET)
+        
+        # Get order by field
+        orderBy = searcher.get_order_fields(self.request.GET)
+
+        queryset = Order.objects.filter(queryQ).order_by(**orderBy)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 ```
