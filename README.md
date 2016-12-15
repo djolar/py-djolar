@@ -5,7 +5,7 @@ Why we need djolar
 --------------
 
 Performing search on the django model is little bit difficule when your front-end app needs complicated and flexible search function.
-Consider the book and author case, suppose we have modle definition `Book`, and `Author` as below:
+Consider the book and author case, suppose we have model definition `Book`, and `Author` as below:
 
 ```python
 class Author(models.Model):
@@ -238,7 +238,7 @@ Book.objects.filter(queryQ | Q(pk__gte=1))
 ```
 
 
-#### Implement with Django & DJANGO RESET FRAMEWORK
+#### Integrate with Django & DJANGO RESET FRAMEWORK
 
 
 ```python
