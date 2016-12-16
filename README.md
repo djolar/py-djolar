@@ -1,6 +1,8 @@
 # djolar
 🍕 A simple and light weight model search module for django (only 250+ lines of code), easy to connect front-end with backend
 
+![intro](http://7xq2xr.com1.z0.glb.clouddn.com/blog/djolar-intro-1.png)
+
 Why we need djolar
 --------------
 
