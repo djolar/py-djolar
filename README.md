@@ -283,3 +283,5 @@ class APIBookListView(mixins.ListModelMixin,
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 ```
+
+Left the search thing to `djolar`, and go for a drink 🍻🍺☕️🍹 now...
