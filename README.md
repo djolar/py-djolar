@@ -1,10 +1,11 @@
 # djolar
-A simple and light weight model search module for django, easy to connect front-end to backend
+A simple and light weight model search module for django (only 250+ lines), easy to connect front-end with backend
 
 Why we need djolar
 --------------
 
-Performing search on the django model is little bit difficule when your front-end app needs complicated and flexible search function.
+Performing search on the django model is little bit difficult when front-end needs dynamic and flexible search function.
+
 Consider the book and author case, suppose we have model definition `Book`, and `Author` as below:
 
 ```python
@@ -20,9 +21,7 @@ class Book(models.Model):
     createDate = models.DateTimeField('create at', auto_now=True)
 ```
 
-And we need to implement a search engine in the front-end web app to support `Book` search.
-
-Search criteria would be like this:
+And we need to implement a search engine for `Book` model in the front-end. Search criteria requirement would be like this:
 
 * search by book name (contains)
 * search by book name (exactly match)
@@ -31,7 +30,7 @@ Search criteria would be like this:
 * search by the book publish date range
 * search critiera with the combination above.
 
-So how can we meet the requirement above with django? You may begin thinking using serveral `filter` chain to perform the search, and the code may look this this:
+So how can we meet the requirement above in django? You may begin thinking using serveral `filter` chain to perform the search, and the code may look this this:
 
 ```python
 queryset = Book.objects.all()
@@ -61,9 +60,9 @@ So it is `djolar` show time....
 Usage
 --------
 
-`djolar` is making use of `Q` to build a compilicated filter criteria. It is very flexible to handle filter with `Q`.
+`djolar` make heavily use of DJANGO model `Q` object to build a compilicated filter. `Q` is very flexible for dynamic search on model. `djolar` is trying to help you convert the query string pass from front-end to a `Q` object. So that you can chain more filter criteria to the parsed `Q` object or apply the `Q` object directly to the model `filter` function.
 
-To use `djolar`, you just need to implement two things:
+To use `djolar`, you just need to do two things:
 
 1. create a subclass of `DjangoSearchParser`. And defining the front-end query param field name and model field name mapping.
 2. use correct `djolar` syntax to write a custom query param string.
@@ -182,7 +181,7 @@ queryQ = searcher.get_query_fields(QueryDict('q=name:Python'))
 Exactly match operator, like SQL `=`
 
 ```python
-# Book name equal to Python (case ignore)
+# Book name equal to 'Python'
 queryQ = searcher.get_query_fields(QueryDict('q=name:"Python"'))
 ```
 
