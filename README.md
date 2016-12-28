@@ -74,7 +74,7 @@ Query param syntax
 
 All query field name value pair should be encoded and assign to `q` field name as below:
 
-        q=key1:value1+key2:value2+key3:value3&s=order&extrafield=value
+    q=key1:value1+key2:value2+key3:value3&s=order&extrafield=value
         
 The above string indicate we need to search with 3 name value pairs:
 
