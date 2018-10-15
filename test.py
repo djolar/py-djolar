@@ -1,4 +1,5 @@
-from parser import DjangoSearchParser
+import unittest
+from djolar.parser import DjangoSearchParser
 from django.test import TestCase
 from django.http.request import QueryDict
 
@@ -251,3 +252,8 @@ class TestDjangoSearchParserSorting(TestCase):
         # Test empty sort param
         s = self.searcher_nosort.get_order_fields(QueryDict('q=st:<submitted&s='))
         self.assertEqual(set(s), set(['pk']))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
