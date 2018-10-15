@@ -1,31 +1,33 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 from django.db.models import Q
+from django.http.request import QueryDict
+
 import re
 
 
 class DjangoSearchParser(object):
     '''
     Query string Format:
-        q=key1:value1+key2:value2+key3:value3&s=order&extrafield=value
-
+        q=key1__eq__value1|key2__lt__value2|key3__co__value3&s=order&extrafield=value
         Syntax:
-        1. contains                 =>  key:value
+        1. contains                 =>  key__co__value
                                     * sql equal: `key like '%value%'`
-        2. exactly match            =>  key:"value", url encoded: key%3A%22value%22
+        2. exactly match            =>  key__eq__value, url encoded: key%3A%22value%22
                                     * sql equal: `key = 'value'`
-        3. `in` operator            =>  key:[value1,value2,value3], url encoded: key%3A%5Bvalue1%2Cvalue2%2Cvalue3%5D
+        3. `in` operator            =>  key__in__[value1,value2,value3]
                                     * sql equal: `key in (value1, value2, value3)`
-        4. `not` operator(AND)      =>  key:~[value1,value2,value3], url encoded: key%3A%7E%5Bvalue1%2Cvalue2%2Cvalue3%5D
+        4. `not` operator(AND)      =>  key__ni__[value1,value2,value3]
                                     * sql equal: `key not in (value1, value2, value3)`
-        5. less than (lt)           =>  key<value
+        5. less than (lt)           =>  key__lt__value
                                     * sql equal: `key < value`
-        6. less than or equal(lte) => key|<value
+        6. less than or equal(lte) => key__lte__value
                                     * sql equal: `key <= value`
-        7. great than (gt)          =>  key>value
+        7. great than (gt)          =>  key__gt__value
                                     * sql equal: `key > value`
-        8. great than or equal(lte) => key|>value
+        8. great than or equal(lte) => key__gte__value
                                     * sql equal: `key >= value`
-
     '''
     def __init__(self, *args, **kwargs):
         try:
@@ -87,7 +89,6 @@ class DjangoSearchParser(object):
     def get_query_fields(self, requestParams):
         '''
         Get model query fields, eg.  Q(aa__contains='123') & Q(bb='123')
-
         :param   requestParams, The query dict get from request
         :return  Q query objects combines with `and` operator
         '''
@@ -103,88 +104,93 @@ class DjangoSearchParser(object):
         # Build custom search
         if 'q' in requestParams.keys():
             keys = requestParams['q']
-            for fields in keys.split('+'):
+            for fields in keys.split('|'):
                 if len(fields) == 0:
                     continue
 
-                # field_dict = {}
-                k, v = fields.split(':')
-
-                # If no value is provided, then ignore this keyword
-                if v == '':
-                    continue
-
-                exactValue = re.match(r'^\<(.*)$', v)
-                if exactValue:
-                    # less than
-                    fieldQ = self._build_q(k, '{}__lt', exactValue.groups()[0])
+                match = re.match(r'(\w+)__co__(\S+)', fields)
+                if match:
+                    # Contain
+                    k, v = match.groups()
+                    # Fuzzy match
+                    if self.ignoreCase:
+                        fieldQ = self._build_q(k, '{}__icontains', v)
+                    else:
+                        fieldQ = self._build_q(k, '{}__contains', v)
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
                     continue
 
-                exactValue = re.match(r'^\|\<(.*)$', v)
-                if exactValue:
+                match = re.match(r'(\w+)__lt__(\S+)', fields)
+                if match:
                     # less than
-                    fieldQ = self._build_q(k, '{}__lte', exactValue.groups()[0])
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}__lt', v)
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
                     continue
 
-                exactValue = re.match(r'^\>(.*)$', v)
-                if exactValue:
-                    # less than
-                    fieldQ = self._build_q(k, '{}__gt', exactValue.groups()[0])
+                match = re.match(r'(\w+)__gt__(\S+)', fields)
+                if match:
+                    # greater than
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}__gt', v)
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
                     continue
 
-                exactValue = re.match(r'^\|\>(.*)$', v)
-                if exactValue:
-                    # less than
-                    fieldQ = self._build_q(k, '{}__gte', exactValue.groups()[0])
+                match = re.match(r'(\w+)__lte__(\S+)', fields)
+                if match:
+                    # less than and equal
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}__lte', v)
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
                     continue
 
-                exactValue = re.match(r'^\"(.*)\"$', v)
-                if exactValue:
+                match = re.match(r'(\w+)__gte__(\S+)', fields)
+                if match:
+                    # greater than and equal
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}__gte', v)
+                    if not fieldQ:
+                        continue
+                    queryObj &= fieldQ
+                    continue
+
+                match = re.match(r'(\w+)__eq__(\S+)', fields)
+                if match:
                     # Exactly match
-                    fieldQ = self._build_q(k, '{}', exactValue.groups()[0])
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}', v)
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
                     continue
 
-                exactValue = re.match(r'^\[(.*)\]$', v)
-                if exactValue:
+                match = re.match(r'(\w+)__in__\[(\S+)\]', fields)
+                if match:
                     # `in` operator
-                    fieldQ = self._build_q(k, '{}__in', [i.strip() for i in exactValue.groups()[0].split(',')])
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}__in', [i.strip() for i in v.split(',')])
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
                     continue
 
-                exactValue = re.match(r'^\~\[(.*)\]$', v)
-                if exactValue:
+                match = re.match(r'(\w+)__ni__(\S+)', fields)
+                if match:
                     # `not` operator
-                    fieldQ = self._build_q(k, '{}__in', [i.strip() for i in exactValue.groups()[0].split(',')])
+                    k, v = match.groups()
+                    fieldQ = self._build_q(k, '{}__in', [i.strip() for i in v.split(',')])
                     if not fieldQ:
                         continue
                     queryObj &= ~fieldQ
                     continue
-
-                # Fuzzy match
-                if self.ignoreCase:
-                    fieldQ = self._build_q(k, '{}__icontains', v)
-                else:
-                    fieldQ = self._build_q(k, '{}__contains', v)
-                if not fieldQ:
-                    continue
-                queryObj &= fieldQ
         else:
             # Build default search if custom search provide no value
             try:
@@ -199,7 +205,6 @@ class DjangoSearchParser(object):
     def get_order_fields(self, requestParams):
         '''
         Get order by field
-
         :param  requestParams, The query dict get from request
         :return Order by field name, if desc return [`-field`], if asc, return [`field`];
                 if order by param not provided, then look for `default_order_by`
@@ -209,13 +214,18 @@ class DjangoSearchParser(object):
         if 's' in requestParams.keys():
             value = requestParams['s']
             if value != '':
-                m = re.search('(?<=-)\S+', value)
-                if m:
-                    # Desc
-                    return ['-{}'.format(self.query_mapping[m.group()])]
-                else:
-                    # Asc
-                    return [self.query_mapping[value]]
+                fields = value.split(',')
+                orderby = []
+                for field in fields:
+                    m = re.search('(?<=-)\S+', field)
+                    if m:
+                        # Desc
+                        orderby.append('-{}'.format(self.query_mapping[m.group()]))
+                    else:
+                        # Asc
+                        orderby.append(self.query_mapping[field])
+
+                return orderby
 
         # Default to user setting
         try:
@@ -226,3 +236,22 @@ class DjangoSearchParser(object):
                 return defaultOrderby
         except AttributeError:
             return ['pk']
+
+
+class BaseSearcher(DjangoSearchParser):
+    def __init__(self, classtype):
+        self._type = classtype
+
+
+def ClassFactory(name, argnames, BaseClass=BaseSearcher):
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            # here, the argnames variable is the one passed to the
+            # ClassFactory call
+            if key not in argnames:
+                raise TypeError("Argument %s not valid for %s" % (key, self.__class__.__name__))
+            setattr(self, key, value)
+        BaseSearcher.__init__(self, name[:-len("Class")])
+    newclass = type(name, (BaseSearcher,), {"__init__": __init__})
+    return newclass
+
