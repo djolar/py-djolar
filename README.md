@@ -84,22 +84,22 @@ The above string indicate we need to search with 3 name value pairs:
 
 The search syntax would be like this:
 
-        1. contains                 =>  key__co__value
-                                    * sql equal: `key like '%value%'`
-        2. exactly match            =>  key__eq__value, url encoded: key%3A%22value%22
-                                    * sql equal: `key = 'value'`
-        3. `in` operator            =>  key__in__[value1,value2,value3]
-                                    * sql equal:`key in (value1,value2,value3)`
-        4. `not` operator(AND)      =>  key__ni__[value1,value2]
-                                    * sql equal: `key not in (value1,value2)`
-        5. less than (lt)           =>  key__lt__value
-                                    * sql equal: `key < value`
-        6. less than or equal(lte) => key__lte__value
-                                    * sql equal: `key <= value`
-        7. great than (gt)          =>  key__gt__value
-                                    * sql equal: `key > value`
-        8. great than or equal(lte) => key__gte__value
-                                    * sql equal: `key >= value`
+1. contains                 =>  key__co__value
+                            * sql equal: `key like '%value%'`
+2. exactly match            =>  key__eq__value, url encoded: key%3A%22value%22
+                            * sql equal: `key = 'value'`
+3. `in` operator            =>  key__in__[value1,value2,value3]
+                            * sql equal:`key in (value1,value2,value3)`
+4. `not` operator(AND)      =>  key__ni__[value1,value2]
+                            * sql equal: `key not in (value1,value2)`
+5. less than (lt)           =>  key__lt__value
+                            * sql equal: `key < value`
+6. less than or equal(lte) => key__lte__value
+                            * sql equal: `key <= value`
+7. great than (gt)          =>  key__gt__value
+                            * sql equal: `key > value`
+8. great than or equal(lte) => key__gte__value
+                            * sql equal: `key >= value`
 
 Example
 -------
