@@ -1,4 +1,4 @@
-#encoding: utf-8
+# encoding: utf-8
 """
 Djolar searcher mixins
 """
@@ -55,4 +55,3 @@ class DjangoSearchMixin(object):
         queryset = self.get_search_queryset().filter(queryQ).order_by(*orderBy)
 
         return queryset
-
