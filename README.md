@@ -218,14 +218,14 @@ Greater than, LIKE SQL `>`
 
 ```python
 # Author age greater than 18
-queryQ = searcher.get_query_fields(QueryDict('q=age>18'))
+queryQ = searcher.get_query_fields(QueryDict('q=age__gt__18'))
 ```
 
 Greater than or equal to, LIKE SQL `>=`
 
 ```python
 # Author age greater than or equal to 18
-queryQ = searcher.get_query_fields(QueryDict('q=age|>18'))
+queryQ = searcher.get_query_fields(QueryDict('q=age__gte__18'))
 ```
 
 After getting the queryQ object, you can filter the Model or extend it more as you need
