@@ -182,7 +182,7 @@ class DjangoSearchParser(object):
                     queryObj &= fieldQ
                     continue
 
-                match = re.match(r'(\w+)__ni__(\S+)', fields)
+                match = re.match(r'(\w+)__ni__\[(\S+)\]', fields)
                 if match:
                     # `not` operator
                     k, v = match.groups()
