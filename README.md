@@ -1,8 +1,6 @@
 # djolar
 🍕 A simple and light weight model search module for django (only 250+ lines of code), easy to connect front-end with backend
 
-![intro](http://7xq2xr.com1.z0.glb.clouddn.com/blog/djolar-intro-1.png)
-
 Why we need djolar
 --------------
 
@@ -19,7 +17,7 @@ class Book(models.Model):
     name = models.CharField('name of the book', max_length=100)
     publish_at = models.DateTimeField('publish date')
     author = models.ForeignKey(Author)
-    statu = models.CharField('status of the book', max_length=10)
+    status = models.CharField('status of the book', max_length=10)
     createDate = models.DateTimeField('create at', auto_now=True)
 ```
 
