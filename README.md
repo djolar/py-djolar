@@ -84,22 +84,22 @@ The above string indicate we need to search with 3 name value pairs:
 
 The search syntax would be like this:
 
-    1. contains                 =>  key:value
-                                * sql equal: `key like '%value%'`
-    2. exactly match            =>  key:"value", url encoded: key%3A%22value%22
-                                * sql equal: `key = 'value'`
-    3. `in` operator            =>  key:[value1,value2,value3], url encoded: key%3A%5Bvalue1%2Cvalue2%2Cvalue3%5D
-                                * sql equal: `key in (value1, value2, value3)`
-    4. `not` operator(AND)      =>  key:~[value1,value2,value3], url encoded: key%3A%7E%5Bvalue1%2Cvalue2%2Cvalue3%5D
-                                * sql equal: `key not in (value1, value2, value3)`
-    5. less than (lt)           =>  key<value
-                                * sql equal: `key < value`
-    6. less than or equal(lte) => key|<value
-                                * sql equal: `key <= value`
-    7. great than (gt)          =>  key>value
-                                * sql equal: `key > value`
-    8. great than or equal(lte) => key|>value
-                                * sql equal: `key >= value`
+        1. contains                 =>  key__co__value
+                                    * sql equal: `key like '%value%'`
+        2. exactly match            =>  key__eq__value, url encoded: key%3A%22value%22
+                                    * sql equal: `key = 'value'`
+        3. `in` operator            =>  key__in__[value1,value2,value3]
+                                    * sql equal:`key in (value1,value2,value3)`
+        4. `not` operator(AND)      =>  key__ni__[value1,value2]
+                                    * sql equal: `key not in (value1,value2)`
+        5. less than (lt)           =>  key__lt__value
+                                    * sql equal: `key < value`
+        6. less than or equal(lte) => key__lte__value
+                                    * sql equal: `key <= value`
+        7. great than (gt)          =>  key__gt__value
+                                    * sql equal: `key > value`
+        8. great than or equal(lte) => key__gte__value
+                                    * sql equal: `key >= value`
 
 Example
 -------
@@ -175,41 +175,42 @@ Contains operator, like the SQL `LIKE` concept
 
 ```python
 # Book name contains python (case ignore)
-queryQ = searcher.get_query_fields(QueryDict('q=name:Python'))
+queryQ = searcher.get_query_fields(QueryDict('q=name__eq__Python'))
 ```
 
 Exactly match operator, like SQL `=`
 
 ```python
 # Book name equal to 'Python'
-queryQ = searcher.get_query_fields(QueryDict('q=name:"Python"'))
+queryQ = searcher.get_query_fields(QueryDict('q=name__eq__Python'))
 ```
 
 IN operator, like SQL `in`
 
 ```python
 # Book name in one of these values ('Python', 'Ruby', 'Swift')
-queryQ = searcher.get_query_fields(QueryDict('q=name:[Python,Ruby,Swift]'))
+queryQ = searcher.get_query_fields(QueryDict('q=name__in__[Python,Ruby,Swift]'))
 ```
+
 NOT operator, LIKE SQL `NOT IN`
 
 ```python
 # Book name NOT in these values ('Python', 'Ruby', 'Swift')
-queryQ = searcher.get_query_fields(QueryDict('q=name:~[Python,Ruby,Swift]'))
+queryQ = searcher.get_query_fields(QueryDict('q=name__ni__[Python,Ruby,Swift]'))
 ```
 
 Less than, LIKE SQL `<`
 
 ```python
 # Author age less than 18
-queryQ = searcher.get_query_fields(QueryDict('q=age<18'))
+queryQ = searcher.get_query_fields(QueryDict('q=age__lt__18'))
 ```
 
 Less than or equal to, LIKE SQL `<=`
 
 ```python
 # Author age less or equal to 18
-queryQ = searcher.get_query_fields(QueryDict('q=age|<18'))
+queryQ = searcher.get_query_fields(QueryDict('q=age__lte__18'))
 ```
 
 
