@@ -17,7 +17,7 @@ class Book(models.Model):
     name = models.CharField('name of the book', max_length=100)
     publish_at = models.DateTimeField('publish date')
     author = models.ForeignKey(Author)
-    statu = models.CharField('status of the book', max_length=10)
+    status = models.CharField('status of the book', max_length=10)
     createDate = models.DateTimeField('create at', auto_now=True)
 ```
 
