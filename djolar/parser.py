@@ -14,12 +14,13 @@ class DjangoSearchParser(object):
         Syntax:
         1. contains                 =>  key__co__value
                                     * sql equal: `key like '%value%'`
-        2. exactly match            =>  key__eq__value, url encoded: key%3A%22value%22
+        2. exactly match            =>  key__eq__value,
+                                        url encoded: key%3A%22value%22
                                     * sql equal: `key = 'value'`
         3. `in` operator            =>  key__in__[value1,value2,value3]
-                                    * sql equal: `key in (value1, value2, value3)`
-        4. `not` operator(AND)      =>  key__ni__[value1,value2,value3]
-                                    * sql equal: `key not in (value1, value2, value3)`
+                                    * sql equal:`key in (value1,value2,value3)`
+        4. `not` operator(AND)      =>  key__ni__[value1,value2]
+                                    * sql equal: `key not in (value1,value2)`
         5. less than (lt)           =>  key__lt__value
                                     * sql equal: `key < value`
         6. less than or equal(lte) => key__lte__value
@@ -33,30 +34,36 @@ class DjangoSearchParser(object):
         try:
             getattr(self, 'query_mapping')
         except AttributeError:
-            raise AttributeError('query_mapping is not defined in the subclass')
+            raise AttributeError(
+                'query_mapping is not defined in the subclass'
+            )
 
         try:
             default = getattr(self, 'default_search')
-            assert isinstance(default, dict), 'default_search should be instance of dict'
+            assert isinstance(default, dict), \
+                'default_search should be instance of dict'
         except AttributeError:
             pass
 
         try:
             force = getattr(self, 'force_search')
-            assert isinstance(force, dict), 'force_search should be instance of dict'
+            assert isinstance(force, dict), \
+                'force_search should be instance of dict'
         except AttributeError:
             pass
 
         try:
             defaultOrderby = getattr(self, 'default_order_by')
-            assert isinstance(defaultOrderby, list) or isinstance(defaultOrderby, tuple), \
+            assert isinstance(defaultOrderby, list) or \
+                isinstance(defaultOrderby, tuple), \
                 'default_order_by should be instance of tuple/list'
         except AttributeError:
             pass
 
         try:
             self.ignoreCase = getattr(self, 'ignore_case')
-            assert isinstance(self.ignoreCase, bool), 'ignore_case should be true/false'
+            assert isinstance(self.ignoreCase, bool), \
+                'ignore_case should be true/false'
         except AttributeError:
             self.ignoreCase = True
 
@@ -77,13 +84,19 @@ class DjangoSearchParser(object):
             for idx, field in enumerate(mapField):
                 field_dict = {}
                 field_dict[field_fmt.format(field)] = value
-                tmpQueryObj = Q(**field_dict) if idx == 0 else tmpQueryObj | Q(**field_dict)
+                if idx == 0:
+                    tmpQueryObj = Q(**field_dict)
+                else:
+                    tmpQueryObj = tmpQueryObj | Q(**field_dict)
         elif isinstance(mapField, str):
             field_dict = {}
             field_dict[field_fmt.format(mapField)] = value
             tmpQueryObj = Q(**field_dict)
         else:
-            raise ValueError('the query_maping key value should be type of list/tuple or str/unicode')
+            raise ValueError(
+                """the query_maping key value should be type of
+                list/tuple or str"""
+            )
         return tmpQueryObj
 
     def get_query_fields(self, requestParams):
@@ -92,7 +105,8 @@ class DjangoSearchParser(object):
         :param   requestParams, The query dict get from request
         :return  Q query objects combines with `and` operator
         '''
-        assert isinstance(requestParams, QueryDict), 'requestParams should be QueryDict'
+        assert isinstance(requestParams, QueryDict), \
+            'requestParams should be QueryDict'
 
         # Build force search
         try:
@@ -176,7 +190,11 @@ class DjangoSearchParser(object):
                 if match:
                     # `in` operator
                     k, v = match.groups()
-                    fieldQ = self._build_q(k, '{}__in', [i.strip() for i in v.split(',')])
+                    fieldQ = self._build_q(
+                        k,
+                        '{}__in',
+                        [i.strip() for i in v.split(',')]
+                    )
                     if not fieldQ:
                         continue
                     queryObj &= fieldQ
@@ -186,7 +204,11 @@ class DjangoSearchParser(object):
                 if match:
                     # `not` operator
                     k, v = match.groups()
-                    fieldQ = self._build_q(k, '{}__in', [i.strip() for i in v.split(',')])
+                    fieldQ = self._build_q(
+                        k,
+                        '{}__in',
+                        [i.strip() for i in v.split(',')]
+                    )
                     if not fieldQ:
                         continue
                     queryObj &= ~fieldQ
@@ -206,11 +228,14 @@ class DjangoSearchParser(object):
         '''
         Get order by field
         :param  requestParams, The query dict get from request
-        :return Order by field name, if desc return [`-field`], if asc, return [`field`];
-                if order by param not provided, then look for `default_order_by`
-                if `default_order_by` is not provided, then return [`pk`] as default
+        :return Order by field name, if desc return [`-field`],
+        if asc, return [`field`];
+        if order by param not provided, then look for `default_order_by`
+        if `default_order_by` is not provided, then return [`pk`] as default
         '''
-        assert isinstance(requestParams, QueryDict), 'requestParams should be QueryDict'
+        assert isinstance(requestParams, QueryDict), \
+            'requestParams should be QueryDict'
+
         if 's' in requestParams.keys():
             value = requestParams['s']
             if value != '':
@@ -249,9 +274,11 @@ def ClassFactory(name, argnames, BaseClass=BaseSearcher):
             # here, the argnames variable is the one passed to the
             # ClassFactory call
             if key not in argnames:
-                raise TypeError("Argument %s not valid for %s" % (key, self.__class__.__name__))
+                raise TypeError(
+                    "Argument %s not valid for %s" % 
+                    (key, self.__class__.__name__)
+                )
             setattr(self, key, value)
         BaseSearcher.__init__(self, name[:-len("Class")])
     newclass = type(name, (BaseSearcher,), {"__init__": __init__})
     return newclass
-

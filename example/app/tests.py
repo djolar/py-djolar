@@ -34,7 +34,9 @@ class TestDjangoSearchParser(TestCase):
         self.assertEqual(q.children[0][1], ['v1', 'v2', 'v3'])
 
         # Test `not` operator
-        q = self.searcher.get_query_fields(QueryDict('q=st__ni__[value1,value2,value3]'))
+        q = self.searcher.get_query_fields(
+            QueryDict('q=st__ni__[value1,value2,value3]')
+        )
         self.assertEqual(q.negated, True)
         self.assertEqual(q.children[0][0], 'status__in')
         self.assertEqual(q.children[0][1], ['value1', 'value2', 'value3'])
@@ -201,11 +203,15 @@ class TestDjangoSearchParserSorting(TestCase):
         self.assertEqual(set(s), set(['status']))
 
         # Test `sort` by decending
-        s = self.searcher.get_order_fields(QueryDict('q=st__lt__submitted&s=-n'))
+        s = self.searcher.get_order_fields(
+            QueryDict('q=st__lt__submitted&s=-n')
+        )
         self.assertEqual(set(s), set(['-name']))
 
         # Test sort by asc
-        s = self.searcher.get_order_fields(QueryDict('q=st__lt__submitted&s=n'))
+        s = self.searcher.get_order_fields(
+            QueryDict('q=st__lt__submitted&s=n')
+        )
         self.assertEqual(set(s), set(['name']))
 
         # Test sort not provided, by default_order_by is provided
@@ -214,9 +220,13 @@ class TestDjangoSearchParserSorting(TestCase):
 
     def testGetSortFieldWithoutDefaultSort(self):
         # Test no sort param given
-        s = self.searcher_nosort.get_order_fields(QueryDict('q=st__eq__submitted'))
+        s = self.searcher_nosort.get_order_fields(
+            QueryDict('q=st__eq__submitted')
+        )
         self.assertEqual(set(s), set(['pk']))
 
         # Test empty sort param
-        s = self.searcher_nosort.get_order_fields(QueryDict('q=st__lt__submitted&s='))
+        s = self.searcher_nosort.get_order_fields(
+            QueryDict('q=st__lt__submitted&s=')
+        )
         self.assertEqual(set(s), set(['pk']))
