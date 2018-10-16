@@ -268,21 +268,10 @@ class APIBookListView(mixins.ListModelMixin,
     '''
     serializer_class = APIReportXYNumericDataSerializer
     searcher_class = APIBookSearcher
-
-    def get(self, request, *args, **kwargs):
-        self.check_permissions(request)
-
-        # Get search parameters
-        searcher = self.get_searcher()
-        queryQ = searcher.get_query_fields(self.request.GET)
-        
-        # Get order by field
-        orderBy = searcher.get_order_fields(self.request.GET)
-
-        queryset = Order.objects.filter(queryQ).order_by(**orderBy)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    
+    def get_search_queryset(self, *args, **kwargs):
+        # Get origin queryset, the result will be process by djolar later
+        return Order.objects.all()
 ```
 
 Left the search thing to `djolar`, and go for a drink 🍻🍺☕️🍹 now...
